@@ -1,0 +1,28 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "tugasmobileprogramming",
+          "appId": "1:367532992143:android:4a2fa55520f3ea509d72fa",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "tugasmobileprogramming",
+          "configurations": {
+            "android": "1:367532992143:android:4a2fa55520f3ea509d72fa",
+            "web": "1:367532992143:web:04a3ab8b9132c87c9d72fa"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "database": "(default)",
+    "location": "nam5",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}
