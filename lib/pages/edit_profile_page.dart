@@ -1,121 +1,164 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditProfilePage extends StatefulWidget {
-  const EditProfilePage({super.key});
+  final Map<String, dynamic> initialData;
+  const EditProfilePage({super.key, required this.initialData});
 
   @override
   State<EditProfilePage> createState() => _EditProfilePageState();
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  final _namaController = TextEditingController();
-  final _lokasiController = TextEditingController();
-  final _jabatanController = TextEditingController();
-  final _profesiController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _hpController = TextEditingController();
-  final _tentangController = TextEditingController();
+  late TextEditingController _nameController;
+  late TextEditingController _bioController;
+  late String _gender;
+  late String _pendidikan;
+  late bool _isPublic;
+  late bool _isLookingForJob;
+  late double _skillLevel;
+  late String _domisili;
 
-  void _showConfirmation() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Center(child: Text("Konfirmasi")),
-          content: const Text("Apakah Anda yakin ingin menyimpan data profil?", textAlign: TextAlign.center),
-          actionsAlignment: MainAxisAlignment.spaceEvenly,
-          actions: [
-            OutlinedButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("NO", style: TextStyle(color: Colors.blue)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                _saveData();
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-              child: const Text("YES", style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
-    );
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.initialData['nama']);
+    _bioController = TextEditingController(text: widget.initialData['bio']);
+    _gender = widget.initialData['gender'];
+    _pendidikan = widget.initialData['pendidikan'];
+    _isPublic = widget.initialData['isPublic'];
+    _isLookingForJob = widget.initialData['isLookingForJob'];
+    _skillLevel = widget.initialData['skillLevel'];
+    _domisili = widget.initialData['domisili'];
   }
 
-  Future<void> _saveData() async {
-    await FirebaseFirestore.instance.collection('users').doc('user_profile').set({
-      'nama': _namaController.text,
-      'lokasi': _lokasiController.text,
-      'jabatan': _jabatanController.text,
-      'profesi': _profesiController.text,
-      'email': _emailController.text,
-      'hp': _hpController.text,
-      'tentang': _tentangController.text,
-    });
-    if (!mounted) return;
-    Navigator.pop(context);
+  // --- MATERI: ALERT DIALOG & TOAST ---
+  void _confirmSave() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text("Simpan Perubahan?"),
+        content: const Text("Pastikan semua data yang diinput sudah benar."),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text("Batal")),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              
+              Map<String, dynamic> updatedData = {
+                'nama': _nameController.text,
+                'bio': _bioController.text,
+                'gender': _gender,
+                'pendidikan': _pendidikan,
+                'isPublic': _isPublic,
+                'isLookingForJob': _isLookingForJob,
+                'skillLevel': _skillLevel,
+                'domisili': _domisili,
+              };
+
+              Navigator.pop(context, updatedData);
+            }, 
+            child: const Text("Ya, Simpan")
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Detail Profile")),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                const Icon(Icons.edit_note, size: 50, color: Colors.blue),
-                const SizedBox(height: 10),
-                const Text("Form Input Profil", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.blue)),
-                const Text("Silakan isi data profil untuk ditampilkan pada halaman detail profil.", textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Colors.grey)),
-                const SizedBox(height: 20),
-                _buildField(_namaController, "Nama Lengkap", Icons.badge_outlined),
-                _buildField(_lokasiController, "Lokasi", Icons.location_on_outlined),
-                _buildField(_jabatanController, "Jabatan", Icons.work_outline),
-                _buildField(_profesiController, "Profesi", Icons.person_search_outlined),
-                _buildField(_emailController, "Email", Icons.email_outlined),
-                _buildField(_hpController, "No. HP", Icons.phone_outlined),
-                _buildField(_tentangController, "Tentang Saya", Icons.info_outline, maxLines: 4),
-                const SizedBox(height: 20),
-                ElevatedButton.icon(
-                  onPressed: _showConfirmation,
-                  icon: const Icon(Icons.check_circle_outline),
-                  label: const Text("Simpan Data"),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, minimumSize: const Size(double.infinity, 50)),
-                ),
-                const SizedBox(height: 10),
-                ElevatedButton.icon(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.delete_outline),
-                  label: const Text("Hapus Data"),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.grey, minimumSize: const Size(double.infinity, 50)),
-                ),
-              ],
-            ),
+      appBar: AppBar(title: const Text("Edit Profil")),
+      body: ListView( 
+        padding: const EdgeInsets.all(16),
+        children: [
+          _buildLabel("Nama Lengkap"),
+          TextField(controller: _nameController, decoration: const InputDecoration(border: OutlineInputBorder())),
+          const SizedBox(height: 15),
+
+          _buildLabel("Bio / Jabatan"),
+          TextField(controller: _bioController, decoration: const InputDecoration(border: OutlineInputBorder())),
+          const SizedBox(height: 15),
+
+          _buildLabel("Domisili"),
+          DropdownButtonFormField<String>(
+            value: _domisili,
+            decoration: const InputDecoration(border: OutlineInputBorder()),
+            items: ["Jakarta", "Bandung", "Surabaya", "Medan"].map((city) {
+              return DropdownMenuItem(value: city, child: Text(city));
+            }).toList(),
+            onChanged: (val) => setState(() => _domisili = val!),
           ),
-        ),
+          const SizedBox(height: 20),
+
+          _buildLabel("Jenis Kelamin"),
+          Row(
+            children: [
+              Radio(value: "Pria", groupValue: _gender, onChanged: (v) => setState(() => _gender = v.toString())),
+              const Text("Pria"),
+              const SizedBox(width: 20),
+              Radio(value: "Wanita", groupValue: _gender, onChanged: (v) => setState(() => _gender = v.toString())),
+              const Text("Wanita"),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          _buildLabel("Pendidikan Terakhir"),
+          Column(
+            children: ["SMK", "Diploma", "Sarjana"].map((edu) {
+              return RadioListTile(
+                title: Text(edu),
+                value: edu,
+                groupValue: _pendidikan,
+                onChanged: (v) => setState(() => _pendidikan = v.toString()),
+              );
+            }).toList(),
+          ),
+
+          _buildLabel("Pengaturan Akun"),
+          CheckboxListTile(
+            title: const Text("Profil Publik"),
+            subtitle: const Text("Izinkan semua orang melihat profil Anda"),
+            value: _isPublic, 
+            onChanged: (v) => setState(() => _isPublic = v!),
+          ),
+          CheckboxListTile(
+            title: const Text("Terbuka untuk Pekerjaan"),
+            value: _isLookingForJob, 
+            onChanged: (v) => setState(() => _isLookingForJob = v!),
+          ),
+
+          _buildLabel("Tingkat Keahlian Flutter: ${_skillLevel.toInt()}%"),
+          Slider(
+            value: _skillLevel,
+            max: 100,
+            divisions: 10,
+            label: _skillLevel.round().toString(),
+            onChanged: (v) => setState(() => _skillLevel = v),
+          ),
+
+          const SizedBox(height: 30),
+
+          ElevatedButton(
+            onPressed: _confirmSave, 
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 50),
+              backgroundColor: Colors.blue[800],
+              foregroundColor: Colors.white,
+            ),
+            child: const Text("SIMPAN SEMUA PERUBAHAN"),
+          ),
+          const SizedBox(height: 50),
+        ],
       ),
     );
   }
 
-  Widget _buildField(TextEditingController controller, String label, IconData icon, {int maxLines = 1}) {
+  Widget _buildLabel(String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      child: TextField(
-        controller: controller,
-        maxLines: maxLines,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon, color: Colors.blue),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-      ),
+      child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
     );
   }
 }

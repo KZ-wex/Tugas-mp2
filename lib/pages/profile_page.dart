@@ -1,105 +1,202 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'detail_profile_page.dart';
+import 'edit_profile_page.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance.collection('users').doc('user_profile').snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-        var data = snapshot.data!.data() as Map<String, dynamic>? ?? {};
+  State<ProfilePage> createState() => _ProfilePageState();
+}
 
-        return Scaffold(
-          body: SingleChildScrollView(
-            child: Column(
+class _ProfilePageState extends State<ProfilePage> {
+  bool _isDetailVisible = false;
+
+  String _nama = "Ridho Caknono";
+  String _bio = "Founder SmartRent-AI";
+  String _domisili = "Jakarta";
+  String _gender = "Pria";
+  String _pendidikan = "SMK";
+  bool _isPublic = true;
+  bool _isLookingForJob = false;
+  double _skillLevel = 50.0;
+
+  Future<void> _navigateAndEditProfile() async {
+    Map<String, dynamic> currentData = {
+      'nama': _nama,
+      'bio': _bio,
+      'gender': _gender,
+      'pendidikan': _pendidikan,
+      'isPublic': _isPublic,
+      'isLookingForJob': _isLookingForJob,
+      'skillLevel': _skillLevel,
+      'domisili': _domisili,
+    };
+
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditProfilePage(initialData: currentData),
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _nama = result['nama'];
+        _bio = result['bio'];
+        _gender = result['gender'];
+        _pendidikan = result['pendidikan'];
+        _isPublic = result['isPublic'];
+        _isLookingForJob = result['isLookingForJob'];
+        _skillLevel = result['skillLevel'];
+        _domisili = result['domisili'];
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Profil Berhasil Diperbarui! ✅"),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[200],
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
               children: [
-                Stack(
-                  alignment: Alignment.center,
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      height: 200,
-                      width: double.infinity,
-                      decoration: const BoxDecoration(
-                        image: DecorationImage(
-                          image: NetworkImage("https://images.unsplash.com/photo-1769788873237-fbd659d9a9f5?w=400&auto=format&fit=crop&q=60"),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 140,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                        child: const CircleAvatar(
-                          radius: 60,
-                          backgroundImage: NetworkImage("https://images.unsplash.com/photo-1718382341267-aef8a9e4ecef?w=400&auto=format&fit=crop&q=60"),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 70),
-                
-                Text(
-                  data['nama'] ?? "Nama User", 
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
-                ),
-                Text(data['lokasi'] ?? "Lokasi"),
-                const SizedBox(height: 10),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(color: Colors.blue.shade100, borderRadius: BorderRadius.circular(15)),
-                  child: Text(data['jabatan'] ?? "Jabatan", style: const TextStyle(color: Colors.blue)),
-                ),
-                
-                const SizedBox(height: 20),
-                Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildStat("Proyek", "30"),
-                      const VerticalDivider(thickness: 1),
-                      _buildStat("Pengikut", "2026"),
-                    ],
+                  height: 150,
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/images/cover_background.jpg'), 
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
-
-                Container(
-                  width: double.infinity,
-                  color: Colors.blueAccent,
-                  child: TextButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context, 
-                        MaterialPageRoute(builder: (context) => const DetailProfilePage())
-                      );
-                    },
-                    icon: const Icon(Icons.person_search, color: Colors.white, size: 16),
-                    label: const Text("Lihat Detail Profil", style: TextStyle(color: Colors.white)),
+                Positioned(
+                  top: 100,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                        color: Colors.white, shape: BoxShape.circle),
+                    child: const CircleAvatar(
+                      radius: 50,
+                      backgroundImage: AssetImage('assets/images/foto_profil.jpg'),
+                    ),
                   ),
                 ),
               ],
             ),
-          ),
-        );
-      },
+            const SizedBox(height: 60),
+
+            Text(_nama, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            Text("Kota $_domisili", style: const TextStyle(color: Colors.grey)),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(20)),
+              child: Text(_bio, style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.w600)),
+            ),
+
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Column(children: [Text("Proyek", style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)), Text("30", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))]),
+                  Column(children: [Text("Pengikut", style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)), Text("2026", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))]),
+                ],
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _isDetailVisible = !_isDetailVisible;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue[600],
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 45),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    ),
+                    child: Text(_isDetailVisible ? "Sembunyikan Detail Profil" : "Lihat Detail Profil"),
+                  ),
+                  const SizedBox(height: 10),
+                  
+                  OutlinedButton.icon(
+                    onPressed: _navigateAndEditProfile, 
+                    icon: const Icon(Icons.edit, size: 18),
+                    label: const Text("Edit Profil"),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.blue),
+                      foregroundColor: Colors.blue,
+                      minimumSize: const Size(double.infinity, 45),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            if (_isDetailVisible)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Card( 
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("Detail Informasi", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        const Divider(),
+                        _buildDetailRow("Nama Lengkap", _nama),
+                        _buildDetailRow("Bio / Jabatan", _bio),
+                        _buildDetailRow("Domisili", _domisili),
+                        _buildDetailRow("Jenis Kelamin", _gender),
+                        _buildDetailRow("Pendidikan", _pendidikan),
+                        _buildDetailRow("Profil Publik", _isPublic ? "Ya" : "Tidak"),
+                        _buildDetailRow("Mencari Pekerjaan", _isLookingForJob ? "Ya" : "Tidak"),
+                        _buildDetailRow("Tingkat Keahlian", "${_skillLevel.toInt()}%"),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 30),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildStat(String label, String value) {
-    return Column(
-      children: [
-        Text(label, style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
-        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w300)),
-      ],
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.grey)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ),
     );
   }
 }
