@@ -8,7 +8,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Data dummy dengan foto dari Unsplash
   final List<Map<String, String>> dummyPosts = [
     {
       "name": "Alex Rivai",
@@ -40,14 +39,12 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[300],
-      // AppBar Tetap ada karena ini ciri khas LinkedIn
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
         leading: const Padding(
           padding: EdgeInsets.all(8.0),
           child: CircleAvatar(
-            // Ngambil dari asset sesuai request lu
             backgroundImage: AssetImage('assets/images/foto_profil.jpg'),
           ),
         ),
@@ -74,7 +71,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      // Langsung nampilin list postingan tanpa header tambahan
       body: ListView.builder(
         itemCount: dummyPosts.length,
         itemBuilder: (context, index) {
@@ -111,7 +107,6 @@ class _HomePageState extends State<HomePage> {
             data['postImg']!, 
             fit: BoxFit.cover, 
             width: double.infinity,
-            // Biar kalau sinyal jelek nggak kosong banget
             loadingBuilder: (context, child, loadingProgress) {
               if (loadingProgress == null) return child;
               return Container(
