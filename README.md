@@ -22,8 +22,6 @@ Repositori ini berisi implementasi antarmuka pengguna (UI) yang terinspirasi dar
 |---|---|
 | ![Home Screen](https://via.placeholder.com/200x400?text=Home+Screen) | ![Profile Screen](https://via.placeholder.com/200x400?text=Profile+Screen) |
 
-> *Catatan: Ganti link gambar di atas dengan screenshot asli aplikasi lu setelah di-upload ke folder `assets/screenshots/`.*
-
 ## ⚙️ Cara Menjalankan Project
 
 1.  **Clone repositori ini**:
