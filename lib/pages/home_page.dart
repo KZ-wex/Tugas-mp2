@@ -8,6 +8,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  List<Map<String, String>> _filteredPosts = [];
+
   final List<Map<String, String>> dummyPosts = [
     {
       "name": "Alex Rivai",
@@ -36,6 +38,36 @@ class _HomePageState extends State<HomePage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _filteredPosts = dummyPosts;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredPosts = dummyPosts;
+      } else {
+        query = query.toLowerCase();
+        List<Map<String, String>> matchingPosts = dummyPosts.where((post) {
+          return post['name']!.toLowerCase().contains(query);
+        }).toList();
+
+        List<Map<String, String>> otherPosts = dummyPosts.where((post) {
+          return !post['name']!.toLowerCase().contains(query);
+        }).toList();
+
+        _filteredPosts = [...matchingPosts, ...otherPosts];
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[300],
@@ -54,14 +86,34 @@ class _HomePageState extends State<HomePage> {
             color: const Color(0xFFEEF3F7),
             borderRadius: BorderRadius.circular(4),
           ),
-          child: const TextField(
-            decoration: InputDecoration(
-              hintText: "Cari",
-              hintStyle: TextStyle(fontSize: 14, color: Colors.black54),
-              prefixIcon: Icon(Icons.search, size: 20, color: Colors.black54),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.only(top: 2),
-            ),
+          child: Autocomplete<String>(
+            optionsBuilder: (TextEditingValue textEditingValue) {
+              if (textEditingValue.text.isEmpty) {
+                return const Iterable<String>.empty();
+              }
+              return dummyPosts
+                  .where((post) => post['name']!
+                      .toLowerCase()
+                      .contains(textEditingValue.text.toLowerCase()))
+                  .map((post) => post['name']!);
+            },
+            onSelected: (String selection) {
+              // onChanged will handle the search
+            },
+            fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
+              return TextField(
+                controller: controller,
+                focusNode: focusNode,
+                onChanged: _onSearchChanged,
+                decoration: const InputDecoration(
+                  hintText: "Cari",
+                  hintStyle: TextStyle(fontSize: 14, color: Colors.black54),
+                  prefixIcon: Icon(Icons.search, size: 20, color: Colors.black54),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.only(top: 2),
+                ),
+              );
+            },
           ),
         ),
         actions: [
@@ -72,9 +124,9 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       body: ListView.builder(
-        itemCount: dummyPosts.length,
+        itemCount: _filteredPosts.length,
         itemBuilder: (context, index) {
-          return _buildPostCard(dummyPosts[index]);
+          return _buildPostCard(_filteredPosts[index]);
         },
       ),
     );
