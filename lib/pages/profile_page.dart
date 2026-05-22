@@ -12,13 +12,27 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _isDetailVisible = false;
 
   String _nama = "Ridho Caknono";
-  String _bio = "Founder SmartRent-AI";
+  String _bio = "Founder RuangPaham";
   String _domisili = "Jakarta";
   String _gender = "Pria";
-  String _pendidikan = "SMK";
+  String _pendidikan = "SMA";
   bool _isPublic = true;
   bool _isLookingForJob = false;
   double _skillLevel = 50.0;
+
+  DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
+  final Map<DateTime, List<String>> _activityHistory = {
+    DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day): [
+      "Mengerjakan Proyek Flutter",
+      "Meeting dengan tim desain"
+    ],
+    DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day - 1): [
+      "Menyelesaikan bug di aplikasi",
+      "Presentasi kepada klien"
+    ],
+  };
+  List<String> _activitiesForSelectedDate = [];
 
   Future<void> _navigateAndEditProfile() async {
     Map<String, dynamic> currentData = {
@@ -51,6 +65,7 @@ class _ProfilePageState extends State<ProfilePage> {
         _domisili = result['domisili'];
       });
 
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Profil Berhasil Diperbarui! ✅"),
@@ -58,6 +73,34 @@ class _ProfilePageState extends State<ProfilePage> {
           backgroundColor: Colors.green,
         ),
       );
+    }
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+        DateTime normalizedDate = DateTime(picked.year, picked.month, picked.day);
+        _activitiesForSelectedDate = _activityHistory[normalizedDate] ?? ["Tidak ada aktivitas pada tanggal ini."];
+      });
+    }
+  }
+
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime ?? TimeOfDay.now(),
+    );
+    if (picked != null && picked != _selectedTime) {
+      setState(() {
+        _selectedTime = picked;
+      });
     }
   }
 
@@ -77,7 +120,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   width: double.infinity,
                   decoration: const BoxDecoration(
                     image: DecorationImage(
-                      image: AssetImage('assets/images/cover_background.jpg'), 
+                      image: AssetImage('assets/images/cover_background.jpg'),
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -137,9 +180,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: Text(_isDetailVisible ? "Sembunyikan Detail Profil" : "Lihat Detail Profil"),
                   ),
                   const SizedBox(height: 10),
-                  
+
                   OutlinedButton.icon(
-                    onPressed: _navigateAndEditProfile, 
+                    onPressed: _navigateAndEditProfile,
                     icon: const Icon(Icons.edit, size: 18),
                     label: const Text("Edit Profil"),
                     style: OutlinedButton.styleFrom(
@@ -157,7 +200,7 @@ class _ProfilePageState extends State<ProfilePage> {
             if (_isDetailVisible)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Card( 
+                child: Card(
                   elevation: 2,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                   child: Padding(
@@ -180,6 +223,52 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
               ),
+              const SizedBox(height: 20),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Riwayat Aktivitas", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const Divider(),
+                      ListTile(
+                        title: Text(_selectedDate == null ? "Pilih tanggal" : "Tanggal: ${_selectedDate!.toLocal().toString().split(' ')[0]}"),
+                        trailing: const Icon(Icons.calendar_today),
+                        onTap: () => _selectDate(context),
+                      ),
+                      ListTile(
+                        title: Text(_selectedTime == null ? "Pilih waktu" : "Waktu: ${_selectedTime?.format(context) ?? ''}"),
+                        trailing: const Icon(Icons.access_time),
+                        onTap: () => _selectTime(context),
+                      ),
+                      if (_selectedDate != null) ...[
+                        const Divider(),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0, left: 16.0, right: 16.0, bottom: 8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                               const Text("Aktivitas pada tanggal ini:", style: TextStyle(fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 8),
+                              ..._activitiesForSelectedDate.map((activity) => Padding(
+                                padding: const EdgeInsets.only(bottom: 4.0),
+                                child: Text("• $activity"),
+                              )),
+                            ],
+                          ),
+                        ),
+                      ]
+                    ],
+                  ),
+                ),
+              ),
+            ),
               const SizedBox(height: 30),
           ],
         ),
